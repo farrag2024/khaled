@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تحديث الرقمي المدني لولي الامر</title>
+  <link rel="icon" href="file:///C:\Users\asus\Documents\HTML\bilal\خالد/9999.png" type="image/png">
+  <style>
+    body {
+      background-color: yellow; /* لون خلفية الصفحة */
+      font-size: 14px; /* حجم الخط */
+      font-weight: bold; /* الخط بولد */
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* توسيط المحتويات أفقياً */
+      justify-content: center; /* توسيط المحتويات عمودياً */
+      height: 100vh; /* ملء ارتفاع الصفحة */
+      margin: 0; /* إزالة الهامش الافتراضي */
+    }
+    input[type="text"] {
+      margin: 10px; /* تباعد بين الحقول */
+      padding: 5px; /* حشوة داخل الحقل */
+    }
+    button {
+      background-color: blue; /* لون زر البحث */
+      color: white; /* لون نص الزر */
+      padding: 10px 20px; /* حشوة داخل الزر */
+      font-size: 16px; /* حجم خط الزر */
+      border: none; /* إزالة الحدود */
+      cursor: pointer; /* تغيير شكل المؤشر عند المرور فوق الزر */
+    }
+    table {
+      margin-top: 20px; /* تباعد أعلى الجدول */
+      border-collapse: collapse; /* دمج حدود الجدول */
+    }
+    th, td {
+      padding: 10px; /* حشوة داخل الخلايا */
+      text-align: center; /* توسيط النص في الخلايا */
+    }
+  </style>
+  <script>
+    let currentData = []; // لتخزين البيانات الحالية
+
+    async function searchByPhone() {
+      const phone = document.getElementById("phone").value;
+
+      // هنا تضع رابط Google Apps Script الخاص بك
+      const url = 'https://script.google.com/macros/s/AKfycbzAlTkDpzGJcQYB10a9dEr9jHEdvBzmcTQ6-c2GrJhQdN8F1gYMv4l2VohVqouooL26KQ/exec?phone=' + phone;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.error) {
+          document.getElementById("result").innerHTML = data.error;
+        } else {
+          currentData = data; // تخزين البيانات الحالية
+          let table = `
+            <table border="1" cellpadding="10">
+              <thead>
+                <tr>
+                  <th>م</th>
+                  <th>اسم الطالب</th>
+                  <th>رقم الهاتف</th>
+                  <th>الرقم المدني لولي الامر</th>
+                </tr>
+              </thead>
+              <tbody>`;
+
+          // إضافة جميع الصفوف المتطابقة إلى الجدول مع حقول قابلة للتحرير
+          data.forEach(row => {
+            table += `
+              <tr>
+                <td>${row.id}</td>
+                <td>${row.name}</td>
+                <td>${row.phone}</td>
+                <td><input type="text" id="idNumber-${row.id}" value="${row.idNumber}" /></td>
+              </tr>`;
+          });
+
+          table += `</tbody></table>`;
+          table += `<button style="background-color: green; color: white;" onclick="saveAllEdits()">تحديث الرقم المدني</button>`;
+          document.getElementById("result").innerHTML = table;
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        document.getElementById("result").innerHTML = "حدث خطأ أثناء البحث.";
+      }
+    }
+
+    // حفظ جميع التعديلات
+    async function saveAllEdits() {
+      const updates = currentData.map(row => {
+        const newIdNumber = document.getElementById(`idNumber-${row.id}`).value;
+        return { id: row.id, idNumber: newIdNumber };
+      });
+
+      const url = 'https://script.google.com/macros/s/AKfycbzAlTkDpzGJcQYB10a9dEr9jHEdvBzmcTQ6-c2GrJhQdN8F1gYMv4l2VohVqouooL26KQ/exec';
+      
+      try {
+        for (const update of updates) {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+              id: update.id,
+              idNumber: update.idNumber
+            })
+          });
+
+          const result = await response.text();
+          console.log(result); // تسجيل نتيجة كل تحديث
+        }
+
+        alert("تم حفظ جميع التعديلات بنجاح!"); // رسالة نجاح
+      } catch (error) {
+        console.error('Error:', error);
+        alert('حدث خطأ أثناء الحفظ.');
+      }
+    }
+  </script>
+</head>
+<body>
+    <img src="9999.png" alt="Logo" style="max-height: 100px;" /> <!-- استبدل "رابط_الصورة_هنا" برابط الصورة -->
+  <h1>تحديث الرقم المدني لولي الامر</h1>
+  <label for="phone">أدخل رقم هاتف ولي الامر:</label>
+  <input type="text" id="phone" name="phone">
+  <button onclick="searchByPhone()">بحث</button>
+
+  <div id="result"></div>
+</body>
+</html>
